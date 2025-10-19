@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# PyTorch checkpoints
+*.pth
+*.pt
+
+# Data
+data/
+*.nii
+*.nii.gz
+
+# VSCode
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Kaggle
+kaggle.json
+
+# System
+.DS_Store
+Thumbs.db
