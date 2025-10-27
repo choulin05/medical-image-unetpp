@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 from src.datasets.brats_dataset_2d import BraTSDataset2D
 from src.models.unetpp_2d import UNetPlusPlus2D
-from src.utils.losses import BCEDiceLoss2D#, dice_coeff
+from src.utils.losses import BCEDiceLoss2D, dice_coeff
 
 def set_seed(seed=42):
     random.seed(seed)

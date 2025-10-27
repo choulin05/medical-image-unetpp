@@ -32,6 +32,16 @@ def set_seed(seed=42):
 def save_checkpoint(state, path):
     torch.save(state, path)
 
+def iou_score(pred, target, eps=1e-6):
+    # pred, target: torch tensors (N, H, W) or (N,1,H,W)
+    if pred.dim() == target.dim() + 1:
+        pred = pred.squeeze(1)
+    pred = (torch.sigmoid(pred) > 0.5).float()
+    target = target.squeeze(1).float()
+    inter = (pred * target).sum(dim=[1,2])
+    union = (pred + target - pred*target).sum(dim=[1,2]) + eps
+    return (inter / union).mean().item()
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", type=str, default="data/brats2021/TrainingData/BraTS2021_Training_Data", help="BraTS folder")
@@ -47,17 +57,19 @@ def parse_args():
     return parser.parse_args()
 
 def collate_fn(batch):
-    # batch is list of tuples (image, mask) where image: [C,H,W,D], mask: [1,H,W,D]
-    images = torch.stack([b[0] for b in batch], dim=0)  # (N,C,H,W,D)
-    masks = torch.stack([b[1] for b in batch], dim=0)   # (N,1,H,W,D)
-    return images, masks
+    batch = [b for b in batch if b is not None]
+    if len(batch) == 0:
+        return None
+    imgs = torch.stack([b[0] for b in batch], dim=0)
+    masks = torch.stack([b[1] for b in batch], dim=0)
+    return imgs, masks
 
 def main():
     args = parse_args()
     os.makedirs(args.save_dir, exist_ok=True)
     set_seed(args.seed)
-
     device = torch.device(args.device)
+    print("Device:", device)
 
     # dataset and split
     dataset = BraTSDataset(args.data_dir)
@@ -72,7 +84,7 @@ def main():
     # model
     model = UNetPlusPlus3D(in_channels=4, num_classes=1, filters=[32,64,128,256,320]).to(device)
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=3, verbose=True)
+    scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=3)
     criterion = BCEDiceLoss(bce_weight=0.5)
 
     start_epoch = 0
