@@ -19,9 +19,20 @@ class BraTSDataset(Dataset):
         # 过滤有效样本
         for case in all_cases:
             try:
-                # 检查 flair 文件是否健康
-                test_file = glob.glob(os.path.join(case, "*_flair.nii")) + \
-                            glob.glob(os.path.join(case, "*_flair.nii.gz"))
+                # check modalities
+                files = []
+                for m in modalities:
+                    files += glob.glob(os.path.join(case, f"*_{m}.nii")) + glob.glob(os.path.join(case, f"*_{m}.nii.gz"))
+
+                # 🔧 支持多个标签命名：seg / seg_new / final_seg
+                seg_files = []
+                seg_files += glob.glob(os.path.join(case, "*seg.nii"))
+                seg_files += glob.glob(os.path.join(case, "*seg_new.nii"))
+                seg_files += glob.glob(os.path.join(case, "*final_seg.nii"))
+                seg_files += glob.glob(os.path.join(case, "*seg.nii.gz"))
+                seg_files += glob.glob(os.path.join(case, "*seg_new.nii.gz"))
+                seg_files += glob.glob(os.path.join(case, "*final_seg.nii.gz"))
+                
                 if len(test_file) == 0:
                     continue
                 nib.load(test_file[0])  # 尝试读取，坏文件会报错

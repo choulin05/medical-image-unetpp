@@ -1,5 +1,5 @@
 import torch
-from src.models.unetpp import UNetPlusPlus
+from src.models.unetpp2d import UNetPlusPlus
 
 def test_unetpp():
     model = UNetPlusPlus(in_channels=1, num_classes=1)
